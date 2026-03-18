@@ -1,0 +1,108 @@
+#' Produces summary plots regarding genetic distances within and between transmission clusters.
+#'
+#' @param clusters A vector named by sequence IDs with values indicating the cluster (subtree) each sequence belongs to.
+#' @param seq2pt A named vector mapping sequence IDs to patient IDs.
+#' @param ip_seqs A vector of sequence IDs corresponding to intake positive patients.
+#' @param snp_dist A matrix of SNP distances between isolates.
+#' @param prefix A descriptor indicating how the clusters were generated (used to name figure outputs).
+#'
+#' @return A matrix containing intra-cluster and inter-cluster genetic distances.
+#'
+#' @export
+cluster_genetic_context <- function(
+    clusters,
+    seq2pt,
+    ip_seqs,
+    snp_dist,
+    prefix
+) {
+    # Subset of isolates assigned to clusters
+    clusters_subset <- clusters[clusters != 1]
+    unique_clusters <- sort(unique(clusters_subset))
+
+    # Compute maximum genetic distance within cluster, minimum genetic distance to another cluster,
+    # and minimum genetic distance to an isolate not in the same cluster
+    cluster_distances <- vapply(
+        unique_clusters,
+        function(c) {
+            cluster_seqs <- names(clusters[clusters == c])
+            non_cluster_seqs <- names(clusters[clusters != c])
+
+            max_intra <- max(snp_dist[cluster_seqs, cluster_seqs], na.rm = TRUE)
+            min_inter_cluster <- min(
+                snp_dist[cluster_seqs, names(clusters_subset[clusters_subset != c])],
+                na.rm = TRUE
+            )
+            min_inter_isolate <- min(
+                snp_dist[cluster_seqs, non_cluster_seqs],
+                na.rm = TRUE
+            )
+
+            c(max_intra, min_inter_cluster, min_inter_isolate)
+        },
+        numeric(3)
+    )
+
+    # Define function for generating plots
+    generate_plot <- function(x, y, xlab, ylab, file_name) {
+        # Create directory if it doesn't exist
+        dir.create("figures", showWarnings = FALSE)
+        file_path <- paste0(
+            "figures/",
+            format(Sys.time(), "%Y-%m-%d"),
+            "_",
+            prefix,
+            "_",
+            file_name,
+            ".pdf"
+        )
+        pdf(file_path)
+        plot(
+            jitter(x),
+            jitter(y),
+            xlab = xlab,
+            ylab = ylab,
+            xlim = c(0, max(x, na.rm = TRUE) + 1),
+            ylim = c(0, max(y, na.rm = TRUE) + 1)
+        )
+        par(new = TRUE)
+        upper_right <- c(0, min(max(x, na.rm = TRUE), max(y, na.rm = TRUE)))
+        plot(
+            upper_right,
+            upper_right,
+            xlab = "",
+            ylab = "",
+            type = "l",
+            xlim = c(0, max(x, na.rm = TRUE) + 1),
+            ylim = c(0, max(y, na.rm = TRUE) + 1)
+        )
+        dev.off()
+    }
+
+    # Generate plots
+    generate_plot(
+        cluster_distances[1, ],
+        cluster_distances[2, ],
+        "Max genetic distance within cluster",
+        "Min genetic distance to another cluster",
+        "intra_vs_inter_cluster_gen_dist"
+    )
+    generate_plot(
+        cluster_distances[1, ],
+        cluster_distances[3, ],
+        "Max genetic distance within cluster",
+        "Min genetic distance to another isolate",
+        "intra_vs_inter_isolate_gen_dist"
+    )
+
+    # Create and return result matrix
+    intra_inter_cluster_dist_mat <- t(cluster_distances)
+    row.names(intra_inter_cluster_dist_mat) <- unique_clusters
+    colnames(intra_inter_cluster_dist_mat) <- c(
+        "Max intra-clust",
+        "Min inter-clust",
+        "Min inter-isolate"
+    )
+
+    intra_inter_cluster_dist_mat
+}

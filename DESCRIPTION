@@ -1,0 +1,31 @@
+Package: transclustVisualize
+Title: Visualization functions for the transclust package
+Version: 0.0.0.9000
+Authors@R:
+    c(
+        person(
+            "Abhirath", "Anand", 
+            email = "abhirath@umich.edu",
+            role = c("aut", "cre"),
+            comment = c(ORCID = "0009-0008-6985-9266")
+        )
+    )
+Description: Visualization functions for the transclust package, which provides tools for analyzing transmission clusters.
+License: MIT + file LICENSE
+Depends:
+    R (>= 4.4)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Imports:
+    ape,
+    cowplot,
+    dplyr,
+    ggplot2,
+    ggtree,
+    ggtreeExtra,
+    hues,
+    paletteer,
+    rlang
+Suggests:
+    transclust
