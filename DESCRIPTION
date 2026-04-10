@@ -4,7 +4,7 @@ Version: 0.0.0.9000
 Authors@R:
     c(
         person(
-            "Abhirath", "Anand", 
+            "Abhirath", "Anand",
             email = "abhirath@umich.edu",
             role = c("aut", "cre"),
             comment = c(ORCID = "0009-0008-6985-9266")
@@ -21,6 +21,8 @@ Imports:
     ape,
     cowplot,
     dplyr,
+    ggalign,
+    ggnewscale,
     ggplot2,
     ggtree,
     ggtreeExtra,
@@ -29,3 +31,5 @@ Imports:
     rlang
 Suggests:
     transclust
+Remotes:
+    theabhirath/transclust
