@@ -22,7 +22,7 @@
 #' @importFrom hues iwanthue
 #' @importFrom rlang .data
 #' @importFrom dplyr left_join
-#' @importFrom ggplot2 aes scale_color_manual theme element_text unit guides guide_legend
+#' @importFrom ggplot2 aes scale_color_manual theme element_text unit guides guide_legend margin
 #' @importFrom stats setNames
 #' @importFrom ape dist.dna as.DNAbin
 #' @export
@@ -275,20 +275,34 @@ plot_clusters_phylo <- function(
             )
     }
 
+    # Adapt legend layout to number of clusters so it stays compact
+    n_clusters <- length(cluster_colors)
+    legend_ncol <- max(1L, ceiling(n_clusters / 20))
+    legend_text_size <- if (n_clusters > 40) 6 else if (n_clusters > 20) 7 else 9
+    legend_key_size <- if (n_clusters > 40) 0.25 else if (n_clusters > 20) 0.3 else 0.4
+    legend_point_size <- if (n_clusters > 40) 2.5 else if (n_clusters > 20) 3 else 4
+
     # Return the final plot
     p +
         scale_color_manual(values = cluster_colors) +
         guides(
             color = guide_legend(
                 title = "Cluster ID",
-                override.aes = list(size = 5, shape = "square")
+                ncol = legend_ncol,
+                byrow = TRUE,
+                override.aes = list(size = legend_point_size, shape = 15)
             )
         ) +
         theme(
             plot.title.position = "plot",
             plot.title = element_text(hjust = 0.5),
             legend.position = "right",
-            legend.key.height = unit(0.8, "cm"),
-            legend.key.width = unit(0.5, "cm")
+            legend.key.height = unit(legend_key_size, "cm"),
+            legend.key.width = unit(legend_key_size, "cm"),
+            legend.text = element_text(size = legend_text_size),
+            legend.title = element_text(size = legend_text_size + 2, face = "bold"),
+            legend.spacing.x = unit(0.15, "cm"),
+            legend.spacing.y = unit(0.05, "cm"),
+            legend.margin = margin(2, 2, 2, 2)
         )
 }
