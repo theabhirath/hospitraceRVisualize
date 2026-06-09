@@ -1,3 +1,3 @@
-# transclustVisualize
+# hospitraceRVisualize
 
-Visualization functions for the transclust package.
+Visualization functions for the hospitraceR package.

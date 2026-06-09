@@ -39,13 +39,13 @@
 #' @importFrom ggtree ggtree geom_tiplab
 #' @importFrom ape keep.tip
 #' @importFrom ggplot2 ggplot aes geom_rect geom_point scale_fill_manual
-#'   scale_color_manual scale_x_continuous scale_y_continuous theme_minimal theme
-#'   element_blank element_text element_rect coord_cartesian labs annotation_custom
-#' @importFrom dplyr left_join filter mutate case_when group_by arrange slice_min
-#'   ungroup pull summarise inner_join anti_join slice_head bind_rows select distinct
+#' @importFrom ggplot2 scale_color_manual scale_x_continuous scale_y_continuous theme_minimal theme
+#' @importFrom ggplot2 element_blank element_text element_rect coord_cartesian labs annotation_custom
+#' @importFrom dplyr left_join filter mutate case_when group_by arrange slice_min ungroup pull summarise
+#' @importFrom dplyr inner_join anti_join slice_head bind_rows select distinct
 #' @importFrom paletteer paletteer_d
 #' @importFrom ggnewscale new_scale_color
-#' @importFrom rlang .data
+#' @importFrom rlang .data .data
 #' @importFrom stats setNames
 #' @export
 plot_trace_phylo_tree <- function(
@@ -491,7 +491,7 @@ plot_trace_phylo_tree <- function(
 #'   with `ggsave()`.
 #'
 #' @importFrom ggplot2 ggplot aes geom_point geom_text geom_tile scale_fill_manual
-#'   scale_color_manual theme_void theme element_text unit guides guide_legend
+#' @importFrom ggplot2 scale_color_manual theme_void theme element_text unit guides guide_legend
 #' @importFrom cowplot get_legend plot_grid
 #' @importFrom paletteer paletteer_d
 #' @importFrom stats setNames

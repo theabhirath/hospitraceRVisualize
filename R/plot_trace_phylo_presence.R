@@ -23,10 +23,10 @@
 #' @importFrom ggtreeExtra geom_fruit
 #' @importFrom ggnewscale new_scale_fill
 #' @importFrom ggplot2 aes geom_tile scale_fill_manual scale_fill_gradientn theme
-#'   element_text unit
+#' @importFrom ggplot2 element_text unit
 #' @importFrom hues iwanthue
 #' @importFrom dplyr left_join filter mutate case_when group_by arrange slice_min
-#'   ungroup pull
+#' @importFrom dplyr ungroup pull
 #' @importFrom rlang .data
 #' @importFrom grDevices colorRampPalette
 #' @importFrom stats setNames

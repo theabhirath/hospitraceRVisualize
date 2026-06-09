@@ -1,5 +1,5 @@
-Package: transclustVisualize
-Title: Visualization functions for the transclust package
+Package: hospitraceRVisualize
+Title: Visualization functions for the hospitraceR package
 Version: 0.0.0.9000
 Authors@R:
     c(
@@ -10,13 +10,12 @@ Authors@R:
             comment = c(ORCID = "0009-0008-6985-9266")
         )
     )
-Description: Visualization functions for the transclust package, which provides tools for analyzing transmission clusters.
+Description: Visualization functions for the hospitraceR package, which provides tools for analyzing transmission clusters.
 License: MIT + file LICENSE
 Depends:
-    R (>= 4.4)
+    R (>= 4.5)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Imports:
     ape,
     cowplot,
@@ -28,8 +27,8 @@ Imports:
     ggtreeExtra,
     hues,
     paletteer,
-    rlang
-Suggests:
-    transclust
+    rlang,
+    hospitraceR
 Remotes:
-    theabhirath/transclust
+    theabhirath/hospitraceR
+Config/roxygen2/version: 8.0.0
