@@ -31,4 +31,6 @@ Imports:
     hospitraceR
 Remotes:
     theabhirath/hospitraceR
+Config/Needs/website:
+    theabhirath/sleekblue
 Config/roxygen2/version: 8.0.0

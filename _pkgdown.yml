@@ -5,10 +5,7 @@ authors:
     href: https://theabhirath.github.io
 
 template:
-  bootstrap: 5
-  bootswatch: simplex
-  math-rendering: katex
-  light-switch: true
+  package: sleekblue
 
 reference:
   - title: Phylogeny and trace plots

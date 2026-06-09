@@ -24,5 +24,4 @@ devtools::install_github("theabhirath/hospitraceRVisualize")
 
 ## Documentation
 
-Full function reference is available at
-<https://theabhirath.github.io/hospitraceRVisualize>.
+While the full function reference is available in the package documentation, for more detailed examples and vignettes, please visit the main documentation site for [`hospitraceR`](https://theabhirath.github.io/hospitraceR).
