@@ -1,0 +1,36 @@
+url: https://theabhirath.github.io/hospitraceRVisualize
+
+authors:
+  Abhirath Anand:
+    href: https://theabhirath.github.io
+
+template:
+  bootstrap: 5
+  bootswatch: simplex
+  math-rendering: katex
+  light-switch: true
+
+reference:
+  - title: Phylogeny and trace plots
+    desc: >
+      Plot phylogenetic trees alongside per-patient location traces, the headline
+      figures of the package.
+    contents:
+      - plot_trace_phylo_tree
+      - plot_trace_phylo_legend
+      - plot_trace_phylo_presence
+      - plot_clusters_phylo
+
+  - title: Cluster comparison and overlap plots
+    desc: >
+      Visualize comparisons between cluster assignments and epidemiological
+      overlap analyses.
+    contents:
+      - plot_jaccard_similarity_heatmap
+      - plot_overlap_perm_test
+
+  - title: Cluster statistics plots
+    desc: >
+      Summarize genetic variation within and between transmission clusters.
+    contents:
+      - cluster_genetic_context
