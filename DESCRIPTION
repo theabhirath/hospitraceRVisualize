@@ -11,6 +11,8 @@ Authors@R:
         )
     )
 Description: Visualization functions for the hospitraceR package, which provides tools for analyzing transmission clusters.
+URL: https://theabhirath.github.io/hospitraceRVisualize, https://github.com/theabhirath/hospitraceRVisualize
+BugReports: https://github.com/theabhirath/hospitraceRVisualize/issues
 License: MIT + file LICENSE
 Depends:
     R (>= 4.5)
