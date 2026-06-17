@@ -61,7 +61,8 @@ overlap analyses.
 
 Summarize genetic variation within and between transmission clusters.
 
-- [`cluster_genetic_context()`](https://theabhirath.github.io/hospitraceRVisualize/reference/cluster_genetic_context.md)
-  : Produces summary plots regarding genetic distances within and
-  between transmission clusters.
+- [`plot_intra_vs_inter_cluster_distance()`](https://theabhirath.github.io/hospitraceRVisualize/reference/plot_intra_vs_inter_cluster_distance.md)
+  : Plot max intra-cluster vs. min inter-cluster genetic distance.
+- [`plot_intra_vs_inter_isolate_distance()`](https://theabhirath.github.io/hospitraceRVisualize/reference/plot_intra_vs_inter_isolate_distance.md)
+  : Plot max intra-cluster vs. min inter-isolate genetic distance.
 
