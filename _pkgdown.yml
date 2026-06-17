@@ -2,7 +2,7 @@ url: https://theabhirath.github.io/hospitraceRVisualize
 
 authors:
   Abhirath Anand:
-    href: https://theabhirath.github.io
+    href: https://theabhirath.com
 
 template:
   package: sleekblue
@@ -30,4 +30,5 @@ reference:
     desc: >
       Summarize genetic variation within and between transmission clusters.
     contents:
-      - cluster_genetic_context
+      - plot_intra_vs_inter_cluster_distance
+      - plot_intra_vs_inter_isolate_distance

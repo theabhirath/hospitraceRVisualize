@@ -148,7 +148,11 @@ plot_trace_phylo_tree <- function(
     # Also get tree depth for scaling calculations
     initial_tree <- ggtree(
         tree_sub,
-        branch.length = if (is_cladogram) "none" else NULL
+        # ggtree expects a string here: "none" draws a cladogram (the path used
+        # for branch-length-free parsimony trees); "branch.length" (the default)
+        # draws a phylogram from the tree's branch lengths (e.g. ML trees).
+        # Passing NULL makes ggtree's internal `branch.length == "none"` test NA.
+        branch.length = if (is_cladogram) "none" else "branch.length"
     )
     tip_data <- initial_tree$data[initial_tree$data$isTip, ]
     tip_to_y <- setNames(tip_data$y, tip_data$label)
@@ -164,7 +168,11 @@ plot_trace_phylo_tree <- function(
     tree_sub$tip.label <- tip_label_map[tree_sub$tip.label]
     tree_plot <- ggtree(
         tree_sub,
-        branch.length = if (is_cladogram) "none" else NULL
+        # ggtree expects a string here: "none" draws a cladogram (the path used
+        # for branch-length-free parsimony trees); "branch.length" (the default)
+        # draws a phylogram from the tree's branch lengths (e.g. ML trees).
+        # Passing NULL makes ggtree's internal `branch.length == "none"` test NA.
+        branch.length = if (is_cladogram) "none" else "branch.length"
     )
     tree_depth <- max(tree_plot$data$x[tree_plot$data$isTip])
 

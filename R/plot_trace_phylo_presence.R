@@ -161,6 +161,24 @@ plot_trace_phylo_presence <- function(
     tip_data <- tree_plot$data[tree_plot$data$isTip, ]
     tree_depth <- max(tip_data$x)
 
+    # When the tree carries branch lengths (e.g. an ML phylogram) its depth is in
+    # substitutions/site and can be orders of magnitude away from the unit-branch
+    # cladogram scale that the absolute label/heatmap offsets below are tuned for.
+    # That mismatch collapses the tree to a sliver and flings the heatmap off the
+    # panel. Rescale the branch lengths (relative lengths preserved, so the
+    # phylogram keeps its shape) to span the same depth a unit-branch cladogram of
+    # this topology would, restoring the original framing for any tree.
+    has_branch_lengths <- !is.null(tree_sub$edge.length) &&
+        length(tree_sub$edge.length) > 0
+    if (has_branch_lengths && !is.na(tree_depth) && tree_depth > 0) {
+        cladogram_depth <- max(ggtree(tree_sub, branch.length = "none")$data$x)
+        tree_sub$edge.length <- tree_sub$edge.length *
+            (cladogram_depth / tree_depth)
+        tree_plot <- ggtree(tree_sub)
+        tip_data <- tree_plot$data[tree_plot$data$isTip, ]
+        tree_depth <- max(tip_data$x)
+    }
+
     if (is.na(tree_depth) || tree_depth <= 0) {
         tree_depth <- n_tips
     }
