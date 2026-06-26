@@ -1,31 +1,33 @@
-#' Plots a phylogeny with trace heatmap using ggtree with consistent sizing
+#' Plot a phylogeny with a location trace heatmap
 #'
 #' Creates a combined visualization of a phylogenetic tree with a patient location
 #' trace heatmap. Uses ggtree for the phylogeny with continuous line segments for
 #' the trace data (not discrete cells). Surveillance data is overlaid as dots.
 #'
-#' @param tree A phylogenetic tree object of class `phylo`.
-#' @param isolate_lookup A data frame from `get_isolate_lookup()` containing columns:
+#' @param tree A phylogenetic tree of class `phylo`.
+#' @param isolate_lookup Data frame from `get_isolate_lookup()` with columns
 #'   isolate_id, patient_id, date, cluster, adm_pos, prev_surv.
-#' @param trace_data A matrix with patient IDs as row names and dates (numeric) as
-#'   column names. Values are numeric categories (0=absent, 1+=location categories).
-#' @param surv_df A data frame with surveillance data containing columns:
-#'   patient_id, genome_id, surv_date, result (0/1 for negative/positive).
-#' @param cluster_filter Numeric vector of cluster IDs to include, or NULL for all clusters.
+#' @param trace_data Matrix with patient IDs as row names and numeric dates as column
+#'   names; values are location categories (0 = absent, 1+ = locations).
+#' @param surv_df Surveillance data frame with columns patient_id, genome_id,
+#'   surv_date, result (0/1 for negative/positive).
+#' @param cluster_filter Cluster IDs to include, or `NULL` for all.
 #' @param trace_colors Color palette for trace location values.
-#' @param surv_colors Named character vector of colors for surveillance types:
-#'   neg (negative), pos_clust (positive cluster), pos_nonclust (positive non-cluster).
-#' @param clust_patient_categories Named list from `cluster_patient_categorization()`.
-#'   Each element is a named vector mapping patient_id to category. If NULL,
-#'   all patients are labeled as "other".
-#' @param label_colors Named character vector of colors for patient category labels.
-#'   Categories from cluster_patient_categorization: index, multiply-colonized-index,
-#'   weak-index, convert, adm-pos, adm-pos-convert, secondary-convert, other.
-#' @param inches_per_row Height in inches allocated per patient row when saving.
-#'   Default 0.2. Use this to control the visual thickness of rows in the output.
-#' @param row_thickness Proportion of row spacing used for trace bar height. Default 0.4.
-#' @param max_tree_width Maximum width for tree as proportion of time range. Default 0.08.
-#'   Tree branch lengths are scaled to fit within this width.
+#' @param surv_colors Named fill colors for surveillance types (neg, pos_clust,
+#'   pos_nonclust).
+#' @param surv_halos Named outline (halo) colors, keyed like `surv_colors`.
+#' @param surv_shapes Named integer plotting shapes (filled, 21-25), keyed like
+#'   `surv_colors`.
+#' @param clust_patient_categories Named list from `cluster_patient_categorization()`
+#'   mapping patient_id to category per cluster; `NULL` labels all patients "other".
+#' @param label_colors Named colors for patient category labels; "other" is the
+#'   fallback for any tip with no assigned category.
+#' @param inches_per_row Height in inches per patient row when saving.
+#' @param row_thickness Proportion of row spacing used for trace bar height.
+#' @param max_tree_width Maximum tree width as a proportion of the time range; branch
+#'   lengths are scaled to fit.
+#' @param show_legend Logical. Attach the figure's own legends (location, patient
+#'   status, surveillance); `FALSE` selects the separate-legend path.
 #'
 #' @return A ggplot object with the following attributes for consistent sizing:
 #'   \itemize{
@@ -35,17 +37,20 @@
 #'     \item \code{inches_per_row}: Height allocated per patient row
 #'   }
 #'   Use these when saving with \code{ggsave()} to maintain consistent row heights.
+#'   When \code{show_legend = TRUE} the figure carries its own native
+#'   legends and the returned object is a single ggplot/ggtree;
+#'   \code{recommended_width} is widened to fit the legend.
 #'
 #' @importFrom ggtree ggtree geom_tiplab
 #' @importFrom ape keep.tip
 #' @importFrom ggplot2 ggplot aes geom_rect geom_point scale_fill_manual
-#' @importFrom ggplot2 scale_color_manual scale_x_continuous scale_y_continuous theme_minimal theme
-#' @importFrom ggplot2 element_blank element_text element_rect coord_cartesian labs annotation_custom
-#' @importFrom dplyr left_join filter mutate case_when group_by arrange slice_min ungroup pull summarise
-#' @importFrom dplyr inner_join anti_join slice_head bind_rows select distinct
-#' @importFrom paletteer paletteer_d
-#' @importFrom ggnewscale new_scale_color
-#' @importFrom rlang .data .data
+#' @importFrom ggplot2 scale_color_manual scale_shape_manual scale_x_continuous theme
+#' @importFrom ggplot2 element_blank element_text element_rect coord_cartesian
+#' @importFrom ggplot2 guides guide_legend
+#' @importFrom dplyr left_join filter mutate case_when group_by arrange slice_min ungroup pull
+#' @importFrom dplyr select distinct
+#' @importFrom ggnewscale new_scale_fill new_scale_color
+#' @importFrom rlang .data
 #' @importFrom stats setNames
 #' @export
 plot_trace_phylo_tree <- function(
@@ -54,12 +59,10 @@ plot_trace_phylo_tree <- function(
     trace_data,
     surv_df,
     cluster_filter = NULL,
-    trace_colors = paletteer_d("ggthemes::Classic_Cyclic"),
-    surv_colors = c(
-        neg = "blue",
-        pos_nonclust = "red",
-        pos_clust = "gold"
-    ),
+    trace_colors = trace_color_palette(),
+    surv_colors = surv_dot_colors(),
+    surv_halos = surv_dot_halos(),
+    surv_shapes = surv_dot_shapes(),
     clust_patient_categories = NULL,
     label_colors = c(
         "index" = "red",
@@ -68,16 +71,16 @@ plot_trace_phylo_tree <- function(
         "convert" = "black",
         "adm-pos" = "forestgreen",
         "adm-pos-convert" = "blue",
-        "secondary-convert" = "grey",
+        "secondary-convert" = "gray",
+        "ambiguous-adm-pos" = "turquoise3",
+        "ambiguous-convert" = "deeppink3",
         "other" = "purple"
     ),
     inches_per_row = 0.2,
-    row_thickness = 0.4,
-    max_tree_width = 0.08
+    row_thickness = 0.55,
+    max_tree_width = 0.08,
+    show_legend = TRUE
 ) {
-    # ========================================================================
-    # 1. Filter data by cluster if specified
-    # ========================================================================
     if (!is.null(cluster_filter)) {
         isolate_lookup <- isolate_lookup[
             isolate_lookup$cluster %in% cluster_filter,
@@ -85,11 +88,8 @@ plot_trace_phylo_tree <- function(
     }
     target_clusters <- unique(isolate_lookup$cluster)
 
-    # ========================================================================
-    # 2. Prepare isolate ordering
-    # ========================================================================
+    # One isolate per patient: earliest date, ties broken by cluster order.
     cluster_order <- sort(unique(isolate_lookup$cluster))
-
     isolate_order <- isolate_lookup |>
         group_by(.data$patient_id) |>
         mutate(cluster_factor = factor(.data$cluster, levels = cluster_order)) |>
@@ -121,19 +121,15 @@ plot_trace_phylo_tree <- function(
     n_tips <- length(tree_sub$tip.label)
     n_cols <- ncol(trace_sub)
 
-    # ========================================================================
-    # 3. Prepare tree and calculate scaling
-    # ========================================================================
     time_points <- as.numeric(colnames(trace_sub))
     time_range <- max(time_points) - min(time_points)
     target_tree_width <- time_range * max_tree_width
     time_step <- if (n_cols > 1) median(diff(time_points)) else 1
 
-    # Check if tree has branch lengths (phylogram) or not (cladogram/parsimony)
+    # Phylogram (branch lengths) vs cladogram (parsimony, no branch lengths).
     is_cladogram <- is.null(tree_sub$edge.length) ||
         length(tree_sub$edge.length) == 0
 
-    # Create tip label map before modifying tree
     tip_label_map <- setNames(
         paste0(
             isolate_patient_map[tree_sub$tip.label],
@@ -144,39 +140,30 @@ plot_trace_phylo_tree <- function(
         tree_sub$tip.label
     )
 
-    # Get y-coordinates from tree before changing labels (y-coords depend on topology, not branch lengths)
-    # Also get tree depth for scaling calculations
-    initial_tree <- ggtree(
-        tree_sub,
-        # ggtree expects a string here: "none" draws a cladogram (the path used
-        # for branch-length-free parsimony trees); "branch.length" (the default)
-        # draws a phylogram from the tree's branch lengths (e.g. ML trees).
-        # Passing NULL makes ggtree's internal `branch.length == "none"` test NA.
-        branch.length = if (is_cladogram) "none" else "branch.length"
-    )
+    # ggtree expects a string here: "none" draws a cladogram (the path used for
+    # branch-length-free parsimony trees); "branch.length" draws a phylogram from
+    # the tree's branch lengths (ML trees). NULL makes ggtree's internal
+    # `branch.length == "none"` test NA.
+    branch_length_arg <- if (is_cladogram) "none" else "branch.length"
+
+    # y-coords depend on topology, not branch lengths; capture them (plus tree
+    # depth for scaling) before relabeling/rescaling the tree.
+    initial_tree <- ggtree(tree_sub, branch.length = branch_length_arg)
     tip_data <- initial_tree$data[initial_tree$data$isTip, ]
     tip_to_y <- setNames(tip_data$y, tip_data$label)
     initial_tree_depth <- max(tip_data$x)
 
-    # Scale branch lengths for phylograms
+    # Rescale phylogram branch lengths so the drawn tree spans target_tree_width.
     if (!is_cladogram && !is.na(initial_tree_depth) && initial_tree_depth > 0) {
         tree_sub$edge.length <- tree_sub$edge.length *
             (target_tree_width / initial_tree_depth)
     }
 
-    # Update tree labels for display and create final plot
     tree_sub$tip.label <- tip_label_map[tree_sub$tip.label]
-    tree_plot <- ggtree(
-        tree_sub,
-        # ggtree expects a string here: "none" draws a cladogram (the path used
-        # for branch-length-free parsimony trees); "branch.length" (the default)
-        # draws a phylogram from the tree's branch lengths (e.g. ML trees).
-        # Passing NULL makes ggtree's internal `branch.length == "none"` test NA.
-        branch.length = if (is_cladogram) "none" else "branch.length"
-    )
+    tree_plot <- ggtree(tree_sub, branch.length = branch_length_arg)
     tree_depth <- max(tree_plot$data$x[tree_plot$data$isTip])
 
-    # Calculate effective tree depth (with cladogram scaling if needed)
+    # Cladograms carry no branch lengths, so scale their coordinates to target width.
     cladogram_scale <- if (is_cladogram && tree_depth > 0) {
         target_tree_width / tree_depth
     } else {
@@ -184,44 +171,38 @@ plot_trace_phylo_tree <- function(
     }
     effective_tree_depth <- tree_depth * cladogram_scale
 
-    # ========================================================================
-    # 4. Calculate heatmap position
-    # ========================================================================
-    # Estimate label width based on longest label
-    max_label_chars <- max(nchar(tip_label_map))
-    estimated_label_width <- max_label_chars * time_range * 0.004
-
-    # Heatmap starts after tree + gap + label width + buffer
+    # Heatmap starts after tree + gap + estimated label width + buffer.
+    estimated_label_width <- max(nchar(tip_label_map)) * time_range * 0.004
     heatmap_offset <- effective_tree_depth *
         1.1 +
         estimated_label_width +
         time_range * 0.02
     time_to_x <- function(t) heatmap_offset + (t - min(time_points))
+    # Trace runs are drawn centered on their time points (start - time_step/2 ..
+    # end + time_step/2), so the first/last cells would otherwise spill half a step
+    # past the data range — before day 0 (into the tip labels) and past the final
+    # time point. Clamp every cell to these bounds.
+    x_lo <- time_to_x(min(time_points))
+    x_hi <- time_to_x(max(time_points))
 
-    # ========================================================================
-    # 5. Create continuous segments for trace data
-    # ========================================================================
+    # Continuous segments: collapse runs of consecutive identical values per tip.
     heatmap_list <- lapply(names(tip_to_y), function(iso_id) {
         y_pos <- tip_to_y[iso_id]
         values <- as.numeric(trace_sub[iso_id, ])
 
-        # Find runs of consecutive identical values
         run_starts <- c(1, which(diff(values) != 0) + 1)
         run_ends <- c(which(diff(values) != 0), n_cols)
         n_runs <- length(run_starts)
 
         data.frame(
-            xmin = time_to_x(time_points[run_starts] - time_step / 2),
-            xmax = time_to_x(time_points[run_ends] + time_step / 2),
+            xmin = pmax(time_to_x(time_points[run_starts] - time_step / 2), x_lo),
+            xmax = pmin(time_to_x(time_points[run_ends] + time_step / 2), x_hi),
             y = rep(unname(y_pos), n_runs),
             value = as.character(values[run_starts])
         )
     })
     heatmap_df <- do.call(rbind, heatmap_list)
 
-    # ========================================================================
-    # 6. Prepare color mapping
-    # ========================================================================
     observed_breaks <- sort(unique(as.numeric(as.matrix(trace_sub))))
     custom_breaks <- sort(unique(c(0, observed_breaks[observed_breaks > 0])))
 
@@ -239,12 +220,7 @@ plot_trace_phylo_tree <- function(
         ))])
     )
 
-    # ========================================================================
-    # 7. Categorize surveillance results and calculate positions
-    # ========================================================================
     visible_patients <- unique(isolate_patient_map[keep_isolates])
-
-    # Get all isolate_ids from the full lookup
     all_lookup_isolates <- unique(isolate_lookup$isolate_id)
 
     surv_filtered <- surv_df |>
@@ -263,15 +239,13 @@ plot_trace_phylo_tree <- function(
                 .data$cluster %in% target_clusters
         )
 
-    # Find patient+date combinations that have a pos_clust
     dates_with_pos_clust <- surv_filtered |>
         filter(.data$is_pos_clust) |>
         select("patient_id", "surv_date") |>
         distinct()
 
-    # Categorize surveillances:
-    # - Discard positives not in lookup ONLY if there's a pos_clust on same date
-    # - Otherwise keep them as pos_nonclust
+    # Categorize surveillances: discard positives not in lookup only if a pos_clust
+    # exists on the same patient+date; otherwise keep them as pos_nonclust.
     surv_categorized <- surv_filtered |>
         mutate(
             has_pos_clust_same_date = paste(.data$patient_id, .data$surv_date) %in%
@@ -286,15 +260,11 @@ plot_trace_phylo_tree <- function(
         ) |>
         filter(!is.na(.data$surv_type))
 
-    # ========================================================================
-    # 7b. Get patient categories from clust_patient_categories parameter
-    # ========================================================================
-    # Extract patient categories for the filtered cluster(s)
+    # Patient categories for the filtered cluster(s); default "other".
     patient_status <- setNames(
         rep("other", length(visible_patients)),
         visible_patients
     )
-
     if (!is.null(clust_patient_categories) && !is.null(cluster_filter)) {
         for (cl in as.character(cluster_filter)) {
             if (cl %in% names(clust_patient_categories)) {
@@ -308,15 +278,14 @@ plot_trace_phylo_tree <- function(
         }
     }
 
-    # Create patient to y-coordinate lookup
-    # Use keep_isolates directly since it has one isolate per patient (from slice_min)
-    # and these are the exact isolates in the tree
+    # keep_isolates has one isolate per patient (from slice_min) and is exactly the
+    # tree's tip set, so it maps patients straight to tip y-coordinates.
     patient_to_y <- setNames(
         tip_to_y[keep_isolates],
         isolate_patient_map[keep_isolates]
     )
 
-    # Calculate surveillance dot positions
+    empty_surv <- data.frame(x = numeric(), y = numeric(), surv_type = character())
     surv_plot_df <- if (nrow(surv_categorized) > 0) {
         surv_with_coords <- surv_categorized |>
             mutate(
@@ -332,19 +301,15 @@ plot_trace_phylo_tree <- function(
                 surv_type = surv_with_coords$surv_type
             )
         } else {
-            data.frame(x = numeric(), y = numeric(), surv_type = character())
+            empty_surv
         }
     } else {
-        data.frame(x = numeric(), y = numeric(), surv_type = character())
+        empty_surv
     }
 
-    # ========================================================================
-    # 8. Build combined plot
-    # ========================================================================
     font_size <- max(1.5, min(3, 30 / sqrt(n_tips)))
     dot_size <- max(0.5, min(2, 20 / sqrt(n_tips)))
 
-    # Scale cladogram tree coordinates
     if (is_cladogram) {
         tree_plot$data$x <- tree_plot$data$x * cladogram_scale
         if ("branch" %in% names(tree_plot$data)) {
@@ -352,25 +317,22 @@ plot_trace_phylo_tree <- function(
         }
     }
 
-    # Add patient status to tree data for colored tip labels
-    # Map from new tip labels back to patient_id, then to status
+    # Color tip labels by patient status: parse patient_id from "patient_id (isolate_id)".
     tree_plot$data$patient_status <- sapply(tree_plot$data$label, function(lbl) {
         if (is.na(lbl) || lbl == "") {
             return(NA_character_)
         }
-        # Extract patient_id from label format "patient_id (isolate_id)"
         pt_id <- sub(" \\(.*\\)$", "", lbl)
         if (pt_id %in% names(patient_status)) patient_status[pt_id] else "other"
     })
 
-    # X-axis breaks at 14-day intervals
     x_axis_breaks <- seq(
         ceiling(min(time_points) / 14) * 14,
         floor(max(time_points) / 14) * 14,
         by = 14
     )
 
-    # Dotted grid data - dots at 7-day intervals
+    # Dotted grid: dots at 7-day intervals across every row.
     grid_df <- expand.grid(
         time = seq(
             ceiling(min(time_points) / 7) * 7,
@@ -381,7 +343,6 @@ plot_trace_phylo_tree <- function(
     )
     grid_df$x <- time_to_x(grid_df$time)
 
-    # Build plot
     p <- tree_plot +
         geom_point(
             data = grid_df,
@@ -405,6 +366,10 @@ plot_trace_phylo_tree <- function(
         scale_fill_manual(
             name = "Location",
             values = color_map,
+            # only present location values are legend entries; 0 / transparent
+            # (patient absent) is not shown
+            breaks = as.character(custom_breaks[custom_breaks > 0]),
+            labels = paste("Location", custom_breaks[custom_breaks > 0]),
             na.value = "transparent"
         ) +
         geom_tiplab(
@@ -416,7 +381,24 @@ plot_trace_phylo_tree <- function(
         scale_color_manual(
             name = "Patient Status",
             values = label_colors,
+            labels = c(
+                "index" = "Index",
+                "multiply-colonized-index" = "Multiply-colonized index",
+                "weak-index" = "Weak index",
+                "convert" = "Convert",
+                "adm-pos" = "Admission positive",
+                "adm-pos-convert" = "Adm. positive convert",
+                "secondary-convert" = "Secondary convert",
+                "ambiguous-adm-pos" = "Ambiguous adm. positive",
+                "ambiguous-convert" = "Ambiguous convert",
+                "other" = "Other"
+            ),
             na.value = "black"
+        ) +
+        # show a "P" glyph (not the default "a") in the Patient Status legend keys;
+        # bound here, before new_scale_color() hands off to the surveillance scale
+        guides(
+            color = guide_legend(override.aes = list(label = "P"))
         ) +
         scale_x_continuous(
             name = "Time (days)",
@@ -429,41 +411,59 @@ plot_trace_phylo_tree <- function(
             axis.ticks.y = element_blank(),
             axis.text.x = element_text(size = 8),
             axis.title.x = element_text(size = 10),
-            legend.position = "none",
+            legend.position = if (show_legend) "right" else "none",
             panel.background = element_rect(fill = "white", color = NA),
             plot.background = element_rect(fill = "white", color = NA)
         ) +
         coord_cartesian(clip = "off")
 
-    # Add surveillance dots if present (use new_scale_color for separate color scale)
+    # Surveillance dots: each type gets a distinct filled shape plus a per-type
+    # halo — a dark ring on the hollow white "negative" dot so it reads on light
+    # bars and white gaps, a white ring on the solid positives so they read on
+    # the dark bars. Fresh fill/color scales (new_scale_*) keep these off the
+    # Location and patient-status scales; shared name/labels merge fill + color
+    # + shape into one "Surveillance" legend.
     if (nrow(surv_plot_df) > 0) {
+        surv_legend_labels <- c(
+            neg = "Negative",
+            pos_nonclust = "Positive (non-cluster)",
+            pos_clust = "Positive (cluster)"
+        )
         p <- p +
+            new_scale_fill() +
             new_scale_color() +
             geom_point(
                 data = surv_plot_df,
-                aes(x = x, y = y, color = surv_type),
+                aes(x = x, y = y, fill = surv_type, color = surv_type, shape = surv_type),
+                stroke = 0.45,
                 size = dot_size,
                 inherit.aes = FALSE
             ) +
-            scale_color_manual(
+            scale_fill_manual(
                 name = "Surveillance",
                 values = surv_colors,
-                labels = c(
-                    neg = "Negative",
-                    pos_nonclust = "Positive (non-cluster)",
-                    pos_clust = "Positive (cluster)"
-                )
+                labels = surv_legend_labels
+            ) +
+            scale_color_manual(
+                name = "Surveillance",
+                values = surv_halos,
+                labels = surv_legend_labels
+            ) +
+            scale_shape_manual(
+                name = "Surveillance",
+                values = surv_shapes,
+                labels = surv_legend_labels
             )
     }
 
-    # ========================================================================
-    # 9. Calculate recommended dimensions and return
-    # ========================================================================
     base_margin <- 0.8
     recommended_height <- n_tips * inches_per_row + base_margin
     recommended_width <- max(8, min(14, time_range / 8 + 4))
+    # widen to make room for the right-hand legend column when it is shown
+    if (show_legend) {
+        recommended_width <- recommended_width + 2.5
+    }
 
-    # Attach dimensions as attributes
     attr(p, "recommended_height") <- recommended_height
     attr(p, "recommended_width") <- recommended_width
     attr(p, "n_patients") <- n_tips
@@ -472,46 +472,43 @@ plot_trace_phylo_tree <- function(
     p
 }
 
-#' Create standalone legend for trace phylogeny plots
+#' Create a standalone legend for trace phylogeny plots
 #'
 #' Generates a combined legend plot for trace locations, surveillance results,
 #' and patient categories that can be saved separately from the main plot.
 #'
-#' @param trace_colors Color palette for trace location values. Should match
-#'   the colors used in `plot_trace_phylo_tree()`.
-#' @param trace_labels Character vector of labels for each trace location.
-#'   Length should match `trace_colors`.
-#' @param surv_colors Named character vector of colors for surveillance types.
-#'   Default matches `plot_trace_phylo_tree()` defaults.
-#' @param label_colors Named character vector of colors for patient category labels.
-#'   Default matches `plot_trace_phylo_tree()` defaults.
-#' @param include_trace Logical. Include trace location legend. Default TRUE.
-#' @param include_surv Logical. Include surveillance legend. Default TRUE.
-#' @param include_patient Logical. Include patient category legend. Default TRUE.
-#' @param title_size Numeric. Font size for legend titles. Default 10.
-#' @param text_size Numeric. Font size for legend text. Default 8.
-#' @param key_size Numeric. Size of legend keys in cm. Default 0.5.
-#' @param layout Character. Layout direction for combining legends.
-#'   `"horizontal"` places legends side-by-side (default),
-#'   `"vertical"` stacks them one below the other.
+#' @param trace_colors Color palette for trace location values; should match
+#'   `plot_trace_phylo_tree()`.
+#' @param trace_labels Character vector of labels per trace location; length
+#'   should match `trace_colors`.
+#' @param surv_colors Named colors for surveillance types; should match
+#'   `plot_trace_phylo_tree()`.
+#' @param surv_shapes Named integer plotting shapes for surveillance types; should
+#'   match `plot_trace_phylo_tree()`.
+#' @param label_colors Named colors for patient category labels; should match
+#'   `plot_trace_phylo_tree()`.
+#' @param include_trace Logical. Include the trace location legend.
+#' @param include_surv Logical. Include the surveillance legend.
+#' @param include_patient Logical. Include the patient category legend.
+#' @param title_size Numeric. Font size for legend titles.
+#' @param text_size Numeric. Font size for legend text.
+#' @param key_size Numeric. Size of legend keys in cm.
+#' @param layout Character. `"horizontal"` places legends side-by-side,
+#'   `"vertical"` stacks them.
 #'
 #' @return A ggplot object containing only the legend(s), suitable for saving
 #'   with `ggsave()`.
 #'
 #' @importFrom ggplot2 ggplot aes geom_point geom_text geom_tile scale_fill_manual
-#' @importFrom ggplot2 scale_color_manual theme_void theme element_text unit guides guide_legend
+#' @importFrom ggplot2 scale_color_manual scale_shape_manual theme_void theme element_text unit guides guide_legend
 #' @importFrom cowplot get_legend plot_grid
-#' @importFrom paletteer paletteer_d
 #' @importFrom stats setNames
-#' @export
+#' @keywords internal
 plot_trace_phylo_legend <- function(
-    trace_colors = paletteer_d("ggthemes::Classic_Cyclic"),
+    trace_colors = trace_color_palette(),
     trace_labels = NULL,
-    surv_colors = c(
-        neg = "blue",
-        pos_nonclust = "red",
-        pos_clust = "gold"
-    ),
+    surv_colors = surv_dot_colors(),
+    surv_shapes = surv_dot_shapes(),
     label_colors = c(
         "index" = "red",
         "multiply-colonized-index" = "darkred",
@@ -519,8 +516,9 @@ plot_trace_phylo_legend <- function(
         "convert" = "black",
         "adm-pos" = "forestgreen",
         "adm-pos-convert" = "blue",
-        "secondary-convert" = "grey",
-        "other" = "purple"
+        "secondary-convert" = "gray",
+        "ambiguous-adm-pos" = "turquoise3",
+        "ambiguous-convert" = "deeppink3"
     ),
     include_trace = TRUE,
     include_surv = TRUE,
@@ -532,8 +530,11 @@ plot_trace_phylo_legend <- function(
 ) {
     layout <- match.arg(layout)
     legend_list <- list()
+    # Approximate row count of each legend (entries + title/padding), used to size
+    # the panels proportionally so a long legend (e.g. patient category) is not
+    # squeezed into an equal share and made to overlap its neighbors.
+    legend_heights <- numeric(0)
 
-    # Common theme for extracting legends
     legend_theme <- theme_void() +
         theme(
             legend.title = element_text(size = title_size, face = "bold"),
@@ -541,11 +542,7 @@ plot_trace_phylo_legend <- function(
             legend.key.size = unit(key_size, "cm")
         )
 
-    # ========================================================================
-    # 1. Trace location legend
-    # ========================================================================
     if (include_trace && length(trace_colors) > 0) {
-        # Use trace_labels length if provided, otherwise use trace_colors length
         if (is.null(trace_labels)) {
             n_items <- length(trace_colors)
             trace_labels <- paste("Location", seq_len(n_items))
@@ -572,11 +569,9 @@ plot_trace_phylo_legend <- function(
             legend_theme
 
         legend_list$trace <- get_legend(trace_plot)
+        legend_heights <- c(legend_heights, n_items + 1.5)
     }
 
-    # ========================================================================
-    # 2. Surveillance legend
-    # ========================================================================
     if (include_surv && length(surv_colors) > 0) {
         surv_labels <- c(
             neg = "Negative",
@@ -590,22 +585,31 @@ plot_trace_phylo_legend <- function(
             surv_type = factor(names(surv_colors), levels = names(surv_colors))
         )
 
-        surv_plot <- ggplot(surv_df, aes(x = x, y = y, color = surv_type)) +
-            geom_point(size = 3) +
-            scale_color_manual(
+        surv_plot <- ggplot(
+            surv_df,
+            aes(x = x, y = y, fill = surv_type, shape = surv_type)
+        ) +
+            geom_point(size = 3, color = "gray15", stroke = 0.4) +
+            scale_fill_manual(
                 name = "Surveillance",
                 values = surv_colors,
                 labels = surv_labels[names(surv_colors)]
             ) +
-            guides(color = guide_legend(ncol = 1)) +
+            scale_shape_manual(
+                name = "Surveillance",
+                values = surv_shapes,
+                labels = surv_labels[names(surv_colors)]
+            ) +
+            guides(
+                fill = guide_legend(ncol = 1),
+                shape = guide_legend(ncol = 1)
+            ) +
             legend_theme
 
         legend_list$surv <- get_legend(surv_plot)
+        legend_heights <- c(legend_heights, length(surv_colors) + 1.5)
     }
 
-    # ========================================================================
-    # 3. Patient category legend
-    # ========================================================================
     if (include_patient && length(label_colors) > 0) {
         patient_labels <- c(
             "index" = "Index",
@@ -615,7 +619,8 @@ plot_trace_phylo_legend <- function(
             "adm-pos" = "Admission positive",
             "adm-pos-convert" = "Adm. positive convert",
             "secondary-convert" = "Secondary convert",
-            "other" = "Other"
+            "ambiguous-adm-pos" = "Ambiguous adm. positive",
+            "ambiguous-convert" = "Ambiguous convert"
         )
 
         patient_df <- data.frame(
@@ -635,18 +640,103 @@ plot_trace_phylo_legend <- function(
             legend_theme
 
         legend_list$patient <- get_legend(patient_plot)
+        legend_heights <- c(legend_heights, length(label_colors) + 1.5)
     }
 
-    # ========================================================================
-    # 4. Combine legends
-    # ========================================================================
     if (length(legend_list) == 0) {
         stop("At least one legend type must be included.")
     }
 
     if (layout == "horizontal") {
-        plot_grid(plotlist = legend_list, ncol = length(legend_list), align = "h")
+        combined <- plot_grid(plotlist = legend_list, ncol = length(legend_list), align = "h")
     } else {
-        plot_grid(plotlist = legend_list, nrow = length(legend_list), align = "v")
+        combined <- plot_grid(
+            plotlist = legend_list,
+            nrow = length(legend_list),
+            align = "v",
+            rel_heights = legend_heights
+        )
     }
+
+    # Recommend a canvas size proportional to the legend's content so callers can
+    # size the saved file to fit. A fixed height squeezes a long stacked legend
+    # (e.g. patient category) until its rows overlap. ~0.22 in per legend row
+    # matches the default text/key sizes.
+    row_in <- 0.22
+    if (layout == "vertical") {
+        attr(combined, "recommended_height") <- sum(legend_heights) * row_in
+        attr(combined, "recommended_width") <- 4
+    } else {
+        attr(combined, "recommended_height") <- max(legend_heights) * row_in
+        attr(combined, "recommended_width") <- 3 * length(legend_list)
+    }
+    combined
+}
+
+
+#' Default palette of visually distinct colors for trace location values
+#'
+#' Paul Tol's nine-color "muted" qualitative scheme — designed to be both
+#' maximally distinguishable to the eye and color-blind safe (deuteranopia /
+#' protanopia / tritanopia) — followed by two Okabe-Ito colors as headroom for
+#' traces with more than nine location categories. Shared as the default by both
+#' `plot_trace_phylo_tree()` and `plot_trace_phylo_legend()` so a figure and its
+#' standalone legend stay color-consistent.
+#'
+#' @return A character vector of hex colors.
+#' @noRd
+trace_color_palette <- function() {
+    c(
+        "#332288", # indigo
+        "#88CCEE", # cyan
+        "#44AA99", # teal
+        "#117733", # green
+        "#999933", # olive
+        "#DDCC77", # sand
+        "#CC6677", # rose
+        "#882255", # wine
+        "#AA4499", # purple
+        "#E69F00", # orange (Okabe-Ito) — headroom
+        "#D55E00" # vermillion (Okabe-Ito) — headroom
+    )
+}
+
+#' Default fill colors for the surveillance dots
+#'
+#' Two achromatic anchors plus one vivid hue. The location palette
+#' (`trace_color_palette()`, Paul Tol "muted") is chromatic but desaturated and
+#' contains nothing white, black, or vivid-red, so these three fills stay
+#' distinct from every floor and from each other. Negative is drawn hollow
+#' (white fill + dark halo from `surv_dot_halos()`); positives are solid. Paired
+#' with `surv_dot_shapes()` they are redundantly shape-encoded, so color-vision
+#' deficiency is a non-issue.
+#'
+#' @return A named character vector keyed by surveillance type.
+#' @noRd
+surv_dot_colors <- function() {
+    c(neg = "#FFFFFF", pos_nonclust = "#000000", pos_clust = "#E31A1C")
+}
+
+#' Default halo (outline) color per surveillance dot
+#'
+#' A dark ring keeps the white "negative" dot legible on light bars and white
+#' gaps; a white ring separates the solid black/red "positive" dots from the
+#' dark trace bars. Keyed like `surv_dot_colors()`.
+#'
+#' @return A named character vector keyed by surveillance type.
+#' @noRd
+surv_dot_halos <- function() {
+    c(neg = "#1A1A1A", pos_nonclust = "#FFFFFF", pos_clust = "#FFFFFF")
+}
+
+#' Default plotting shapes for the surveillance dots
+#'
+#' Filled shapes (21 = circle, 23 = diamond, 24 = triangle) so each type is
+#' distinguishable by outline shape alone, independent of color. Filled variants
+#' carry both a fill (`surv_dot_colors()`) and a halo stroke (`surv_dot_halos()`).
+#'
+#' @return A named integer vector keyed by surveillance type.
+#' @noRd
+surv_dot_shapes <- function() {
+    c(neg = 21, pos_nonclust = 23, pos_clust = 24)
 }

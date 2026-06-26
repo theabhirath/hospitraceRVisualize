@@ -2,22 +2,22 @@
 % Please edit documentation in R/plot_genetic_context.R
 \name{plot_intra_vs_inter_cluster_distance}
 \alias{plot_intra_vs_inter_cluster_distance}
-\title{Plot max intra-cluster vs. min inter-cluster genetic distance.}
+\title{Plot max intra-cluster vs. min inter-cluster genetic distance}
 \usage{
 plot_intra_vs_inter_cluster_distance(clusters, snp_dist)
 }
 \arguments{
-\item{clusters}{A vector named by sequence IDs giving the cluster each sequence belongs to.
-Singletons are dropped; their sequences still count as unclustered isolates.}
+\item{clusters}{Vector named by sequence IDs giving each sequence's cluster; singletons dropped
+but their sequences still count as unclustered isolates.}
 
-\item{snp_dist}{A matrix of SNP distances between isolates. Its row/column names define the full
-universe of isolates, including those not assigned to any cluster.}
+\item{snp_dist}{Matrix of SNP distances between isolates; row and column names define the full
+isolate universe, including unclustered isolates.}
 }
 \value{
 A ggplot object, suitable for saving with \code{ggsave()}.
 }
 \description{
-Visualizes, for each cluster, the maximum genetic distance within the cluster against the
-minimum genetic distance to an isolate in another cluster. Points below the \code{y = x} line are
-clusters whose internal diversity exceeds their separation from the nearest other cluster.
+Plots each cluster's maximum within-cluster distance against the minimum distance to an isolate
+in another cluster. Points below \code{y = x} are clusters whose internal diversity exceeds their
+separation from the nearest other cluster.
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_trace_phylo_presence.R
 \name{plot_trace_phylo_presence}
 \alias{plot_trace_phylo_presence}
-\title{Plots a phylogeny with presence/absence trace heatmap and surveillance cell overlay}
+\title{Plot a phylogeny with a presence/absence trace heatmap and surveillance overlay}
 \usage{
 plot_trace_phylo_presence(
   tree,
@@ -15,29 +15,27 @@ plot_trace_phylo_presence(
 )
 }
 \arguments{
-\item{tree}{A phylogenetic tree object of class \code{phylo}.}
+\item{tree}{A phylogenetic tree of class \code{phylo}.}
 
-\item{isolate_lookup}{A data frame from \code{get_isolate_lookup()} containing columns:
-isolate_id, patient_id, date, cluster, adm_pos, prev_surv.}
+\item{isolate_lookup}{Data frame from \code{get_isolate_lookup()} with columns isolate_id,
+patient_id, date, cluster, adm_pos, prev_surv.}
 
-\item{trace_data}{A matrix with patient IDs as row names and dates (numeric) as
-column names. Values should be binary (0=absent, 1=present).}
+\item{trace_data}{Binary matrix (0/1) with patient IDs as row names and dates as column names.}
 
-\item{surv_df}{A data frame with surveillance data containing columns:
-patient_id, genome_id, surv_date, result (0/1 for negative/positive).}
+\item{surv_df}{Surveillance data frame with columns patient_id, genome_id, surv_date,
+result (0/1 for negative/positive).}
 
-\item{cluster_filter}{Numeric vector of cluster IDs to include, or NULL for all clusters.}
+\item{cluster_filter}{Cluster IDs to include, or \code{NULL} for all.}
 
-\item{presence_color}{Color for presence cells. Default "gray85" (light gray).}
+\item{presence_color}{Color for presence cells.}
 
-\item{surv_colors}{Named character vector of colors for surveillance types:
-neg (negative) and pos (positive).}
+\item{surv_colors}{Named colors for the negative and positive surveillance types.}
 }
 \value{
-A ggplot object with the combined tree, heatmap, and surveillance overlay.
+A ggplot object combining the tree, heatmap, and surveillance overlay.
 }
 \description{
 Creates a combined visualization of a phylogenetic tree with a patient presence/absence
-trace heatmap. Surveillance data is encoded directly into cell colors (not dots).
-Use dark gray for presence, white for absence, and surveillance colors for results.
+trace heatmap. Surveillance data is encoded directly into cell colors (not dots):
+dark gray for presence, white for absence, and surveillance colors for results.
 }

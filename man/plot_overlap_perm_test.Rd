@@ -16,21 +16,20 @@ plot_overlap_perm_test(
 )
 }
 \arguments{
-\item{perm_df}{A long data frame of the permuted (null) distribution with
-columns \code{trace_type} (a factor whose levels define the x-axis order) and
-\code{overlap_fraction}. One row per (trace type, permutation).}
+\item{perm_df}{Long null-distribution data frame, one row per (trace type,
+permutation), with columns \code{trace_type} (factor; levels set x-axis order)
+and \code{overlap_fraction}.}
 
-\item{obs_df}{A data frame of observed values with one row per trace type:
-columns \code{trace_type} (a factor with the same levels as \code{perm_df}),
-\code{overlap_fraction}, \code{n_overlap} and \code{n_converts}.}
+\item{obs_df}{Observed values, one row per trace type, with columns
+\code{trace_type} (same levels as \code{perm_df}), \code{overlap_fraction}, \code{n_overlap},
+\code{n_converts}.}
 
 \item{title}{Plot title.}
 
-\item{subtitle}{Plot subtitle. Defaults to \code{NULL} (no subtitle).}
+\item{subtitle}{Plot subtitle, or \code{NULL} for none.}
 
-\item{trace_labels}{A named character vector mapping \code{trace_type} levels to
-x-axis labels. The default maps facility/floor/room (and their \code{seq_}
-counterparts) to "Facility"/"Floor"/"Room".}
+\item{trace_labels}{Named character vector mapping \code{trace_type} levels to
+x-axis labels.}
 
 \item{x_label, y_label}{Axis titles.}
 }
@@ -38,14 +37,13 @@ counterparts) to "Facility"/"Floor"/"Room".}
 A ggplot object with violin plots for each overlap type.
 }
 \description{
-Renders the core convert-weighted overlap figure: for each trace type a violin
-of the permuted (null) pooled overlap fractions with a boxplot inside, the
+Renders the core convert-weighted overlap figure: per trace type, a violin of
+the permuted (null) pooled overlap fractions with an inner boxplot, the
 observed pooled fraction as a red diamond, and the observed counts
-(\code{n_overlap}/\code{n_converts}) labelled above each violin. Violins are filled by
+(\code{n_overlap}/\code{n_converts}) labeled above each violin. Violins are filled by
 overlap group (co-occurrence vs sequential).
 
-This function draws only the core figure. Aggregation across clusters /
-sequence types, significance/p-value annotations, and any group dividers or
-headers that depend on the specific trace-type layout are left to the caller
-to compute and add to the returned plot.
+Only the core figure is drawn. Cross-cluster/sequence-type aggregation,
+significance annotations, and trace-type-specific dividers or headers are left
+to the caller to add to the returned plot.
 }

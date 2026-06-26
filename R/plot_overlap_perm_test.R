@@ -1,28 +1,26 @@
 #' Plot overlap permutation test results as violin plots
 #'
 #' @description
-#' Renders the core convert-weighted overlap figure: for each trace type a violin
-#' of the permuted (null) pooled overlap fractions with a boxplot inside, the
+#' Renders the core convert-weighted overlap figure: per trace type, a violin of
+#' the permuted (null) pooled overlap fractions with an inner boxplot, the
 #' observed pooled fraction as a red diamond, and the observed counts
-#' (`n_overlap`/`n_converts`) labelled above each violin. Violins are filled by
+#' (`n_overlap`/`n_converts`) labeled above each violin. Violins are filled by
 #' overlap group (co-occurrence vs sequential).
 #'
-#' This function draws only the core figure. Aggregation across clusters /
-#' sequence types, significance/p-value annotations, and any group dividers or
-#' headers that depend on the specific trace-type layout are left to the caller
-#' to compute and add to the returned plot.
+#' Only the core figure is drawn. Cross-cluster/sequence-type aggregation,
+#' significance annotations, and trace-type-specific dividers or headers are left
+#' to the caller to add to the returned plot.
 #'
-#' @param perm_df A long data frame of the permuted (null) distribution with
-#'   columns `trace_type` (a factor whose levels define the x-axis order) and
-#'   `overlap_fraction`. One row per (trace type, permutation).
-#' @param obs_df A data frame of observed values with one row per trace type:
-#'   columns `trace_type` (a factor with the same levels as `perm_df`),
-#'   `overlap_fraction`, `n_overlap` and `n_converts`.
+#' @param perm_df Long null-distribution data frame, one row per (trace type,
+#'   permutation), with columns `trace_type` (factor; levels set x-axis order)
+#'   and `overlap_fraction`.
+#' @param obs_df Observed values, one row per trace type, with columns
+#'   `trace_type` (same levels as `perm_df`), `overlap_fraction`, `n_overlap`,
+#'   `n_converts`.
 #' @param title Plot title.
-#' @param subtitle Plot subtitle. Defaults to `NULL` (no subtitle).
-#' @param trace_labels A named character vector mapping `trace_type` levels to
-#'   x-axis labels. The default maps facility/floor/room (and their `seq_`
-#'   counterparts) to "Facility"/"Floor"/"Room".
+#' @param subtitle Plot subtitle, or `NULL` for none.
+#' @param trace_labels Named character vector mapping `trace_type` levels to
+#'   x-axis labels.
 #' @param x_label,y_label Axis titles.
 #'
 #' @return A ggplot object with violin plots for each overlap type.
@@ -50,13 +48,9 @@ plot_overlap_perm_test <- function(
 ) {
     trace_types <- levels(perm_df$trace_type)
 
-    # Co-occurrence (facility/floor/room) vs sequential (seq_*) grouping
-    classify_group <- function(tt) {
-        ifelse(grepl("^seq_", as.character(tt)), "Sequential", "Co-occurrence")
-    }
-
+    # seq_* trace types are sequential overlap; the rest are co-occurrence
     perm_df$group <- factor(
-        classify_group(perm_df$trace_type),
+        ifelse(grepl("^seq_", as.character(perm_df$trace_type)), "Sequential", "Co-occurrence"),
         levels = c("Co-occurrence", "Sequential")
     )
 

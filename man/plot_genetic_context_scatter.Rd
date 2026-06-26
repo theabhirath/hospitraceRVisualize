@@ -2,12 +2,12 @@
 % Please edit documentation in R/plot_genetic_context.R
 \name{plot_genetic_context_scatter}
 \alias{plot_genetic_context_scatter}
-\title{Jittered scatter of two per-cluster genetic-distance measures with a y = x reference line.}
+\title{Plot a jittered scatter of two per-cluster genetic-distance measures with a y = x reference line}
 \usage{
 plot_genetic_context_scatter(x, y, xlab, ylab)
 }
 \arguments{
-\item{x, y}{Numeric vectors of the per-cluster distances to plot on each axis.}
+\item{x, y}{Numeric vectors of per-cluster distances for each axis.}
 
 \item{xlab, ylab}{Axis labels.}
 }
@@ -15,6 +15,6 @@ plot_genetic_context_scatter(x, y, xlab, ylab)
 A ggplot object.
 }
 \description{
-Jittered scatter of two per-cluster genetic-distance measures with a y = x reference line.
+Plot a jittered scatter of two per-cluster genetic-distance measures with a y = x reference line
 }
 \keyword{internal}

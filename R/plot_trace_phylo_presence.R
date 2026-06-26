@@ -1,34 +1,29 @@
-#' Plots a phylogeny with presence/absence trace heatmap and surveillance cell overlay
+#' Plot a phylogeny with a presence/absence trace heatmap and surveillance overlay
 #'
 #' Creates a combined visualization of a phylogenetic tree with a patient presence/absence
-#' trace heatmap. Surveillance data is encoded directly into cell colors (not dots).
-#' Use dark gray for presence, white for absence, and surveillance colors for results.
+#' trace heatmap. Surveillance data is encoded directly into cell colors (not dots):
+#' dark gray for presence, white for absence, and surveillance colors for results.
 #'
-#' @param tree A phylogenetic tree object of class `phylo`.
-#' @param isolate_lookup A data frame from `get_isolate_lookup()` containing columns:
-#'   isolate_id, patient_id, date, cluster, adm_pos, prev_surv.
-#' @param trace_data A matrix with patient IDs as row names and dates (numeric) as
-#'   column names. Values should be binary (0=absent, 1=present).
-#' @param surv_df A data frame with surveillance data containing columns:
-#'   patient_id, genome_id, surv_date, result (0/1 for negative/positive).
-#' @param cluster_filter Numeric vector of cluster IDs to include, or NULL for all clusters.
-#' @param presence_color Color for presence cells. Default "gray85" (light gray).
-#' @param surv_colors Named character vector of colors for surveillance types:
-#'   neg (negative) and pos (positive).
+#' @param tree A phylogenetic tree of class `phylo`.
+#' @param isolate_lookup Data frame from `get_isolate_lookup()` with columns isolate_id,
+#'   patient_id, date, cluster, adm_pos, prev_surv.
+#' @param trace_data Binary matrix (0/1) with patient IDs as row names and dates as column names.
+#' @param surv_df Surveillance data frame with columns patient_id, genome_id, surv_date,
+#'   result (0/1 for negative/positive).
+#' @param cluster_filter Cluster IDs to include, or `NULL` for all.
+#' @param presence_color Color for presence cells.
+#' @param surv_colors Named colors for the negative and positive surveillance types.
 #'
-#' @return A ggplot object with the combined tree, heatmap, and surveillance overlay.
+#' @return A ggplot object combining the tree, heatmap, and surveillance overlay.
 #'
 #' @importFrom ggtree ggtree geom_tiplab gheatmap vexpand
 #' @importFrom ape keep.tip
 #' @importFrom ggtreeExtra geom_fruit
 #' @importFrom ggnewscale new_scale_fill
-#' @importFrom ggplot2 aes geom_tile scale_fill_manual scale_fill_gradientn theme
-#' @importFrom ggplot2 element_text unit
+#' @importFrom ggplot2 aes geom_tile scale_fill_manual theme element_text unit
 #' @importFrom hues iwanthue
-#' @importFrom dplyr left_join filter mutate case_when group_by arrange slice_min
-#' @importFrom dplyr ungroup pull
+#' @importFrom dplyr filter mutate case_when group_by arrange slice_min ungroup pull
 #' @importFrom rlang .data
-#' @importFrom grDevices colorRampPalette
 #' @importFrom stats setNames
 #' @export
 plot_trace_phylo_presence <- function(
@@ -40,18 +35,12 @@ plot_trace_phylo_presence <- function(
     presence_color = "gray85",
     surv_colors = c(neg = "blue", pos = "red")
 ) {
-    # ========================================================================
-    # 1. Filter data by cluster if specified
-    # ========================================================================
     if (!is.null(cluster_filter)) {
         isolate_lookup <- isolate_lookup[
             isolate_lookup$cluster %in% cluster_filter,
         ]
     }
 
-    # ========================================================================
-    # 2. Prepare isolate ordering
-    # ========================================================================
     cluster_order <- sort(unique(isolate_lookup$cluster))
 
     isolate_order <- isolate_lookup |>
@@ -70,9 +59,6 @@ plot_trace_phylo_presence <- function(
         stop("No isolates found with matching patients in trace_data.")
     }
 
-    # ========================================================================
-    # 3. Prepare trace data with surveillance overlay
-    # ========================================================================
     isolate_patient_map <- setNames(
         isolate_lookup$patient_id,
         isolate_lookup$isolate_id
@@ -84,10 +70,8 @@ plot_trace_phylo_presence <- function(
     ]
     row.names(trace_sub) <- keep_isolates
 
-    # Get visible patients
     visible_patients <- unique(isolate_patient_map[keep_isolates])
 
-    # Categorize surveillance results
     surv_categorized <- surv_df |>
         filter(.data$patient_id %in% visible_patients) |>
         mutate(
@@ -99,18 +83,16 @@ plot_trace_phylo_presence <- function(
         ) |>
         filter(!is.na(.data$surv_type))
 
-    # Encode surveillance into trace matrix using special values:
-    # 0 = absent, 1 = present, 1.25 = neg surv, 1.5 = pos surv
+    # Encode surveillance into the trace matrix using sentinel values:
+    # 0 = absent, 1 = present, 1.25 = neg surv, 1.5 = pos surv.
     trace_with_surv <- as.matrix(trace_sub)
 
     if (nrow(surv_categorized) > 0) {
-        # Create reverse map: patient_id -> isolate_id (for isolates in trace)
         patient_to_iso <- setNames(
             keep_isolates,
             isolate_patient_map[keep_isolates]
         )
 
-        # Filter to surveillance records with valid row/column mappings
         surv_to_encode <- surv_categorized |>
             mutate(
                 iso_id = patient_to_iso[as.character(.data$patient_id)],
@@ -122,7 +104,7 @@ plot_trace_phylo_presence <- function(
                 .data$col_name %in% colnames(trace_with_surv)
             )
 
-        # Apply all surveillance values at once using matrix indexing
+        # Apply all surveillance values at once via matrix indexing.
         if (nrow(surv_to_encode) > 0) {
             idx <- cbind(
                 match(surv_to_encode$iso_id, rownames(trace_with_surv)),
@@ -132,9 +114,6 @@ plot_trace_phylo_presence <- function(
         }
     }
 
-    # ========================================================================
-    # 4. Subset and prepare tree
-    # ========================================================================
     tree_sub <- keep.tip(tree, keep_isolates)
 
     tip_label_map <- setNames(
@@ -148,15 +127,11 @@ plot_trace_phylo_presence <- function(
     )
     tree_sub$tip.label <- tip_label_map
 
-    # ========================================================================
-    # 5. Dynamic scaling calculations
-    # ========================================================================
     n_tips <- length(tree_sub$tip.label)
     n_cols <- ncol(trace_with_surv)
 
     font_size <- max(0.5, min(2, 20 / sqrt(n_tips)))
 
-    # Create tree plot and extract depth for scaling
     tree_plot <- ggtree(tree_sub)
     tip_data <- tree_plot$data[tree_plot$data$isTip, ]
     tree_depth <- max(tip_data$x)
@@ -188,9 +163,6 @@ plot_trace_phylo_presence <- function(
         min(tree_depth * 4, n_cols * tree_depth * 0.02)
     )
 
-    # ========================================================================
-    # 6. Prepare heatmap data and color mapping
-    # ========================================================================
     custom_breaks <- c(0, 1, 1.25, 1.5)
     color_map <- c(
         "0" = "white",
@@ -212,9 +184,6 @@ plot_trace_phylo_presence <- function(
     idx_keep_labels <- seq(1, length(col_lab), label_interval)
     col_lab[setdiff(seq_along(col_lab), idx_keep_labels)] <- ""
 
-    # ========================================================================
-    # 7. Build base plot
-    # ========================================================================
     tree_plot <- tree_plot +
         geom_tiplab(size = font_size, align = TRUE, offset = 0.5, linetype = NULL)
 
@@ -239,10 +208,7 @@ plot_trace_phylo_presence <- function(
             drop = FALSE
         )
 
-    # ========================================================================
-    # 8. Add annotations (cluster)
-    # ========================================================================
-    # Only include clusters that are actually present in the filtered data
+    # Restrict the cluster annotation to clusters present in the filtered data.
     clusters_present <- unique(isolate_lookup$cluster[
         isolate_lookup$isolate_id %in% keep_isolates
     ])
@@ -280,9 +246,6 @@ plot_trace_phylo_presence <- function(
             drop = FALSE
         )
 
-    # ========================================================================
-    # 9. Final theme adjustments
-    # ========================================================================
     base_plot +
         theme(
             legend.title = element_text(size = 11),

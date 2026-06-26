@@ -2,23 +2,24 @@
 % Please edit documentation in R/plot_jaccard_similarity_heatmap.R
 \name{plot_jaccard_similarity_heatmap}
 \alias{plot_jaccard_similarity_heatmap}
-\title{Plots a heatmap of the Jaccard similarity between clusters created with two different methods.}
+\title{Plot a heatmap of Jaccard similarity between two clusterings}
 \usage{
 plot_jaccard_similarity_heatmap(clusters1, clusters2, width = 10, height = 10)
 }
 \arguments{
-\item{clusters1}{A vector named by sequence IDs with values being subtrees defining the cluster.}
+\item{clusters1}{Vector named by sequence IDs giving each sequence's cluster.}
 
-\item{clusters2}{A vector named by the same sequence IDs as clusters1 with values being subtrees
-defining the cluster.}
+\item{clusters2}{Vector named by the same sequence IDs as \code{clusters1} giving each sequence's
+cluster.}
 
-\item{width}{The width of the heatmap plot.}
+\item{width}{Width of the heatmap.}
 
-\item{height}{The height of the heatmap plot.}
+\item{height}{Height of the heatmap.}
 }
 \value{
-A ggplot plot object showing the overlap between clusters.
+A ggplot object showing the overlap between clusters.
 }
 \description{
-Plots a heatmap of the Jaccard similarity between clusters created with two different methods.
+Plots the pairwise Jaccard overlap between the clusters of two clusterings of the same
+sequences, with the overall fraction of exactly-matching clusters in the title.
 }

@@ -30,5 +30,6 @@ reference:
     desc: >
       Summarize genetic variation within and between transmission clusters.
     contents:
+      - plot_genetic_distance_by_cluster
       - plot_intra_vs_inter_cluster_distance
       - plot_intra_vs_inter_isolate_distance

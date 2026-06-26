@@ -2,22 +2,22 @@
 % Please edit documentation in R/plot_genetic_context.R
 \name{cluster_max_intra_distances}
 \alias{cluster_max_intra_distances}
-\title{Per-cluster maximum intra-cluster SNP distance.}
+\title{Compute each cluster's maximum intra-cluster SNP distance}
 \usage{
 cluster_max_intra_distances(clusters, snp_dist)
 }
 \arguments{
-\item{clusters}{A vector named by sequence IDs giving the cluster each sequence belongs to.}
+\item{clusters}{Vector named by sequence IDs giving each sequence's cluster.}
 
-\item{snp_dist}{A matrix of SNP distances between isolates.}
+\item{snp_dist}{Matrix of SNP distances between isolates.}
 }
 \value{
 A named numeric vector of max intra-cluster distances, one per non-singleton cluster.
 }
 \description{
-Drops singletons and computes, for each remaining cluster, the maximum within-cluster
-distance via \code{\link[hospitraceR:cluster_pairwise_distances]{hospitraceR::cluster_pairwise_distances()}}. Clusters are visited in the same
-\code{sort(unique(...))} order as \code{\link[hospitraceR:cluster_inter_distances]{hospitraceR::cluster_inter_distances()}}, so the result lines up
-row-for-row with that matrix and the two can be plotted directly against each other.
+Drops singletons and computes each remaining cluster's maximum within-cluster distance via
+\code{\link[hospitraceR:cluster_pairwise_distances]{hospitraceR::cluster_pairwise_distances()}}. Clusters are visited in the same \code{sort(unique(...))}
+order as \code{\link[hospitraceR:cluster_inter_distances]{hospitraceR::cluster_inter_distances()}}, so the result lines up row-for-row with that
+matrix and the two can be plotted directly against each other.
 }
 \keyword{internal}
