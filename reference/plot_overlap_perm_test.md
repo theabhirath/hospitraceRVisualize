@@ -1,15 +1,14 @@
 # Plot overlap permutation test results as violin plots
 
-Renders the core convert-weighted overlap figure: for each trace type a
-violin of the permuted (null) pooled overlap fractions with a boxplot
-inside, the observed pooled fraction as a red diamond, and the observed
-counts (`n_overlap`/`n_converts`) labelled above each violin. Violins
-are filled by overlap group (co-occurrence vs sequential).
+Renders the core convert-weighted overlap figure: per trace type, a
+violin of the permuted (null) pooled overlap fractions with an inner
+boxplot, the observed pooled fraction as a red diamond, and the observed
+counts (`n_overlap`/`n_converts`) labeled above each violin. Violins are
+filled by overlap group (co-occurrence vs sequential).
 
-This function draws only the core figure. Aggregation across clusters /
-sequence types, significance/p-value annotations, and any group dividers
-or headers that depend on the specific trace-type layout are left to the
-caller to compute and add to the returned plot.
+Only the core figure is drawn. Cross-cluster/sequence-type aggregation,
+significance annotations, and trace-type-specific dividers or headers
+are left to the caller to add to the returned plot.
 
 ## Usage
 
@@ -30,15 +29,15 @@ plot_overlap_perm_test(
 
 - perm_df:
 
-  A long data frame of the permuted (null) distribution with columns
-  `trace_type` (a factor whose levels define the x-axis order) and
-  `overlap_fraction`. One row per (trace type, permutation).
+  Long null-distribution data frame, one row per (trace type,
+  permutation), with columns `trace_type` (factor; levels set x-axis
+  order) and `overlap_fraction`.
 
 - obs_df:
 
-  A data frame of observed values with one row per trace type: columns
-  `trace_type` (a factor with the same levels as `perm_df`),
-  `overlap_fraction`, `n_overlap` and `n_converts`.
+  Observed values, one row per trace type, with columns `trace_type`
+  (same levels as `perm_df`), `overlap_fraction`, `n_overlap`,
+  `n_converts`.
 
 - title:
 
@@ -46,13 +45,11 @@ plot_overlap_perm_test(
 
 - subtitle:
 
-  Plot subtitle. Defaults to `NULL` (no subtitle).
+  Plot subtitle, or `NULL` for none.
 
 - trace_labels:
 
-  A named character vector mapping `trace_type` levels to x-axis labels.
-  The default maps facility/floor/room (and their `seq_` counterparts)
-  to "Facility"/"Floor"/"Room".
+  Named character vector mapping `trace_type` levels to x-axis labels.
 
 - x_label, y_label:
 

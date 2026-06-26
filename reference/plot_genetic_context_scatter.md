@@ -1,7 +1,7 @@
-# Jittered scatter of two per-cluster genetic-distance measures with a y = x reference line.
+# Plot a jittered scatter of two per-cluster genetic-distance measures with a y = x reference line
 
-Jittered scatter of two per-cluster genetic-distance measures with a y =
-x reference line.
+Plot a jittered scatter of two per-cluster genetic-distance measures
+with a y = x reference line
 
 ## Usage
 
@@ -13,7 +13,7 @@ plot_genetic_context_scatter(x, y, xlab, ylab)
 
 - x, y:
 
-  Numeric vectors of the per-cluster distances to plot on each axis.
+  Numeric vectors of per-cluster distances for each axis.
 
 - xlab, ylab:
 

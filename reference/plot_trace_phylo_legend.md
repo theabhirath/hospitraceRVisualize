@@ -1,4 +1,4 @@
-# Create standalone legend for trace phylogeny plots
+# Create a standalone legend for trace phylogeny plots
 
 Generates a combined legend plot for trace locations, surveillance
 results, and patient categories that can be saved separately from the
@@ -8,12 +8,14 @@ main plot.
 
 ``` r
 plot_trace_phylo_legend(
-  trace_colors = paletteer_d("ggthemes::Classic_Cyclic"),
+  trace_colors = trace_color_palette(),
   trace_labels = NULL,
-  surv_colors = c(neg = "blue", pos_nonclust = "red", pos_clust = "gold"),
+  surv_colors = surv_dot_colors(),
+  surv_shapes = surv_dot_shapes(),
   label_colors = c(index = "red", `multiply-colonized-index` = "darkred", `weak-index` =
     "orange", convert = "black", `adm-pos` = "forestgreen", `adm-pos-convert` = "blue",
-    `secondary-convert` = "grey", other = "purple"),
+    `secondary-convert` = "gray", `ambiguous-adm-pos` = "turquoise3", `ambiguous-convert`
+    = "deeppink3"),
   include_trace = TRUE,
   include_surv = TRUE,
   include_patient = TRUE,
@@ -28,58 +30,57 @@ plot_trace_phylo_legend(
 
 - trace_colors:
 
-  Color palette for trace location values. Should match the colors used
-  in
+  Color palette for trace location values; should match
   [`plot_trace_phylo_tree()`](https://theabhirath.github.io/hospitraceRVisualize/reference/plot_trace_phylo_tree.md).
 
 - trace_labels:
 
-  Character vector of labels for each trace location. Length should
-  match `trace_colors`.
+  Character vector of labels per trace location; length should match
+  `trace_colors`.
 
 - surv_colors:
 
-  Named character vector of colors for surveillance types. Default
-  matches
-  [`plot_trace_phylo_tree()`](https://theabhirath.github.io/hospitraceRVisualize/reference/plot_trace_phylo_tree.md)
-  defaults.
+  Named colors for surveillance types; should match
+  [`plot_trace_phylo_tree()`](https://theabhirath.github.io/hospitraceRVisualize/reference/plot_trace_phylo_tree.md).
+
+- surv_shapes:
+
+  Named integer plotting shapes for surveillance types; should match
+  [`plot_trace_phylo_tree()`](https://theabhirath.github.io/hospitraceRVisualize/reference/plot_trace_phylo_tree.md).
 
 - label_colors:
 
-  Named character vector of colors for patient category labels. Default
-  matches
-  [`plot_trace_phylo_tree()`](https://theabhirath.github.io/hospitraceRVisualize/reference/plot_trace_phylo_tree.md)
-  defaults.
+  Named colors for patient category labels; should match
+  [`plot_trace_phylo_tree()`](https://theabhirath.github.io/hospitraceRVisualize/reference/plot_trace_phylo_tree.md).
 
 - include_trace:
 
-  Logical. Include trace location legend. Default TRUE.
+  Logical. Include the trace location legend.
 
 - include_surv:
 
-  Logical. Include surveillance legend. Default TRUE.
+  Logical. Include the surveillance legend.
 
 - include_patient:
 
-  Logical. Include patient category legend. Default TRUE.
+  Logical. Include the patient category legend.
 
 - title_size:
 
-  Numeric. Font size for legend titles. Default 10.
+  Numeric. Font size for legend titles.
 
 - text_size:
 
-  Numeric. Font size for legend text. Default 8.
+  Numeric. Font size for legend text.
 
 - key_size:
 
-  Numeric. Size of legend keys in cm. Default 0.5.
+  Numeric. Size of legend keys in cm.
 
 - layout:
 
-  Character. Layout direction for combining legends. `"horizontal"`
-  places legends side-by-side (default), `"vertical"` stacks them one
-  below the other.
+  Character. `"horizontal"` places legends side-by-side, `"vertical"`
+  stacks them.
 
 ## Value
 

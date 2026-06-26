@@ -1,7 +1,8 @@
-# Plots a heatmap of the Jaccard similarity between clusters created with two different methods.
+# Plot a heatmap of Jaccard similarity between two clusterings
 
-Plots a heatmap of the Jaccard similarity between clusters created with
-two different methods.
+Plots the pairwise Jaccard overlap between the clusters of two
+clusterings of the same sequences, with the overall fraction of
+exactly-matching clusters in the title.
 
 ## Usage
 
@@ -13,22 +14,21 @@ plot_jaccard_similarity_heatmap(clusters1, clusters2, width = 10, height = 10)
 
 - clusters1:
 
-  A vector named by sequence IDs with values being subtrees defining the
-  cluster.
+  Vector named by sequence IDs giving each sequence's cluster.
 
 - clusters2:
 
-  A vector named by the same sequence IDs as clusters1 with values being
-  subtrees defining the cluster.
+  Vector named by the same sequence IDs as `clusters1` giving each
+  sequence's cluster.
 
 - width:
 
-  The width of the heatmap plot.
+  Width of the heatmap.
 
 - height:
 
-  The height of the heatmap plot.
+  Height of the heatmap.
 
 ## Value
 
-A ggplot plot object showing the overlap between clusters.
+A ggplot object showing the overlap between clusters.

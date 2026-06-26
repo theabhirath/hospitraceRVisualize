@@ -1,10 +1,9 @@
-# Plot max intra-cluster vs. min inter-isolate genetic distance.
+# Plot max intra-cluster vs. min inter-isolate genetic distance
 
-Visualizes, for each cluster, the maximum genetic distance within the
-cluster against the minimum genetic distance to any other isolate
-(including isolates not assigned to a cluster). Points below the `y = x`
-line are clusters whose internal diversity exceeds their separation from
-the nearest neighbouring isolate.
+Plots each cluster's maximum within-cluster distance against the minimum
+distance to any other isolate (including unclustered ones). Points below
+`y = x` are clusters whose internal diversity exceeds their separation
+from the nearest neighboring isolate.
 
 ## Usage
 
@@ -16,15 +15,14 @@ plot_intra_vs_inter_isolate_distance(clusters, snp_dist)
 
 - clusters:
 
-  A vector named by sequence IDs giving the cluster each sequence
-  belongs to. Singletons are dropped; their sequences still count as
-  unclustered isolates.
+  Vector named by sequence IDs giving each sequence's cluster;
+  singletons dropped but their sequences still count as unclustered
+  isolates.
 
 - snp_dist:
 
-  A matrix of SNP distances between isolates. Its row/column names
-  define the full universe of isolates, including those not assigned to
-  any cluster.
+  Matrix of SNP distances between isolates; row and column names define
+  the full isolate universe, including unclustered isolates.
 
 ## Value
 

@@ -1,9 +1,9 @@
-# Plots a phylogeny with presence/absence trace heatmap and surveillance cell overlay
+# Plot a phylogeny with a presence/absence trace heatmap and surveillance overlay
 
 Creates a combined visualization of a phylogenetic tree with a patient
 presence/absence trace heatmap. Surveillance data is encoded directly
-into cell colors (not dots). Use dark gray for presence, white for
-absence, and surveillance colors for results.
+into cell colors (not dots): dark gray for presence, white for absence,
+and surveillance colors for results.
 
 ## Usage
 
@@ -23,37 +23,35 @@ plot_trace_phylo_presence(
 
 - tree:
 
-  A phylogenetic tree object of class `phylo`.
+  A phylogenetic tree of class `phylo`.
 
 - isolate_lookup:
 
-  A data frame from `get_isolate_lookup()` containing columns:
-  isolate_id, patient_id, date, cluster, adm_pos, prev_surv.
+  Data frame from `get_isolate_lookup()` with columns isolate_id,
+  patient_id, date, cluster, adm_pos, prev_surv.
 
 - trace_data:
 
-  A matrix with patient IDs as row names and dates (numeric) as column
-  names. Values should be binary (0=absent, 1=present).
+  Binary matrix (0/1) with patient IDs as row names and dates as column
+  names.
 
 - surv_df:
 
-  A data frame with surveillance data containing columns: patient_id,
-  genome_id, surv_date, result (0/1 for negative/positive).
+  Surveillance data frame with columns patient_id, genome_id, surv_date,
+  result (0/1 for negative/positive).
 
 - cluster_filter:
 
-  Numeric vector of cluster IDs to include, or NULL for all clusters.
+  Cluster IDs to include, or `NULL` for all.
 
 - presence_color:
 
-  Color for presence cells. Default "gray85" (light gray).
+  Color for presence cells.
 
 - surv_colors:
 
-  Named character vector of colors for surveillance types: neg
-  (negative) and pos (positive).
+  Named colors for the negative and positive surveillance types.
 
 ## Value
 
-A ggplot object with the combined tree, heatmap, and surveillance
-overlay.
+A ggplot object combining the tree, heatmap, and surveillance overlay.
