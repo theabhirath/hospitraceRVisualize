@@ -1,15 +1,12 @@
 # hospitraceRVisualize
 
-Visualization functions for the
+Opinionated visualization functions for the
 [`hospitraceR`](https://theabhirath.github.io/hospitraceR) package,
-which provides tools for analyzing transmission clusters in healthcare
-settings using genomic data. This package handles all of the plotting:
-phylogenetic trees combined with per-patient location traces, cluster
-comparison heatmaps, overlap permutation-test figures, and
-genetic-context summaries.
-
-> \[!WARNING\] This project is still in the early stages of development
-> and the API may change without notice.
+which provides tools for detecting and analyzing transmission clusters
+in healthcare settings using whole-genome sequencing data. This package
+provides functions for plotting phylogenetic trees combined with
+per-patient location traces, cluster comparison heatmaps, overlap
+permutation-test figures, and genetic-context summaries.
 
 ## Installation
 
