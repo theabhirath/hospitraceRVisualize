@@ -1,7 +1,8 @@
 #' Plot overlap permutation test results as violin plots
 #'
 #' @description
-#' Renders the core convert-weighted overlap figure: per trace type, a violin of
+#' Renders the core overlap figure, pooled over convert patients (one per patient
+#' acquisition, not per isolate): per trace type, a violin of
 #' the permuted (null) pooled overlap fractions with an inner boxplot, the
 #' observed pooled fraction as a red diamond, and the observed counts
 #' (`n_overlap`/`n_converts`) labeled above each violin. Violins are filled by
@@ -44,7 +45,7 @@ plot_overlap_perm_test <- function(
         seq_room = "Room"
     ),
     x_label = "Trace type",
-    y_label = "Fraction of converts with overlap (convert-weighted)"
+    y_label = "Fraction of convert patients with overlap"
 ) {
     trace_types <- levels(perm_df$trace_type)
 
